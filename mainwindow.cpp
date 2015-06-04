@@ -35,11 +35,12 @@ void MainWindow::on_btnToCpp_clicked()
 
 void MainWindow::on_btnToText_clicked()
 {
-	QStringList lines = ui->teCpp->toPlainText().split('\n');
+	QStringList lines = ui->teCpp->toPlainText().replace("\r\n", "\n").split('\n');
 	QString text;
 	QString unescaped;
 	foreach (const QString &l, lines) {
-		QString s = l.trimmed().mid(1, l.size() - 2);
+		QString s = l.trimmed();
+		s = s.mid(1, s.size() - 2);
 		if (!s.size())
 			continue;
 		unescaped.clear();
