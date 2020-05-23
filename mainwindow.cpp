@@ -1,68 +1,29 @@
 #include <QRegExp>
 
+#include "converter.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{
-	ui->setupUi(this);
-}
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) { ui->setupUi(this); }
 
-MainWindow::~MainWindow()
-{
-	delete ui;
-}
+MainWindow::~MainWindow() { delete ui; }
 
-void MainWindow::on_btnToCpp_clicked()
+void MainWindow::on_pbConvert_clicked()
 {
-	/* c++11 here just for fun =) */
-	ui->teCpp->setText([](const QStringList &l){
-		QStringList escaped;
-		QRegExp re("(\"|\\\\)");
-		foreach (const QString &s, l) {
-			QString s2 = s;
-			escaped += s2.replace(re, "\\\\1");
-		}
-		QString ret = '"' + escaped.join("\\n\"\n\"") + '"';
-		if (ret.endsWith("\n\"\"")) {
-			ret.resize(ret.size() - 3);
-		}
-		return ret;
-	}(ui->teText->toPlainText().split('\n')));
-}
+    Converter::Type srcType = Converter::Text;
+    if (ui->rbSrcCpp->isChecked())
+        srcType = Converter::Cpp;
+    else if (ui->rbSrcJson->isChecked())
+        srcType = Converter::Json;
 
-void MainWindow::on_btnToText_clicked()
-{
-	QStringList lines = ui->teCpp->toPlainText().replace("\r\n", "\n").split('\n');
-	QString text;
-	QString unescaped;
-	foreach (const QString &l, lines) {
-		QString s = l.trimmed();
-		s = s.mid(1, s.size() - 2);
-		if (!s.size())
-			continue;
-		unescaped.clear();
-		for (int i = 0; i < s.size(); i++) {
-			if (s[i] == '\\') {
-				if (i < s.size() - 1) {
-					/* cpp has more escape sequences. but I need just next ones atm */
-					if (s[i+1] == 'n')
-						unescaped += '\n';
-					else if (s[i+1] == 't')
-						unescaped += '\t';
-					else
-						unescaped += s[i+1];
-					i++;
-				} else {
-					break;
-				}
-			} else {
-				unescaped += s[i];
-			}
-		}
-		text += unescaped;
-	}
-	ui->teText->setPlainText(text);
+    Converter::Type dstType = Converter::Text;
+    if (ui->rbDstCpp->isChecked())
+        dstType = Converter::Cpp;
+    else if (ui->rbDstJson->isChecked())
+        dstType = Converter::Json;
+
+    Converter converter;
+    converter.setSourceType(srcType);
+    converter.setDestinationType(dstType);
+    ui->teDestination->setPlainText(converter.convert(ui->teSource->toPlainText()));
 }
