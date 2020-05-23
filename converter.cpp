@@ -72,8 +72,8 @@ QString Converter::cppToText(const QString &source) const
 
 QString Converter::jsonToText(const QString &source) const
 {
-    auto doc = QJsonDocument::fromJson(source.toUtf8());
-    return doc.toVariant().toString();
+    auto doc = QJsonDocument::fromJson(QString("[%1]").arg(source).toUtf8());
+    return doc.toVariant().toStringList().value(0);
 }
 
 QString Converter::textToCpp(const QString &source) const
